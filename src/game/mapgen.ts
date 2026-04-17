@@ -1,5 +1,5 @@
 import type { TileMap, Tile, TileType, RoomRect } from './types'
-import { getRandomMonsters, createEliteMonster } from './data/monsters'
+import { getRandomMonster, createEliteMonster } from './data/monsters'
 import { randomGoldInRange } from './economy'
 
 export class MapGenerationError extends Error {
@@ -41,6 +41,14 @@ function roomCenter(room: RoomRect): { x: number; y: number } {
     x: Math.floor(room.x + room.w / 2),
     y: Math.floor(room.y + room.h / 2),
   }
+}
+
+function roomTilePositions(room: RoomRect): { x: number; y: number }[] {
+  const positions: { x: number; y: number }[] = []
+  for (let y = room.y; y < room.y + room.h; y++)
+    for (let x = room.x; x < room.x + room.w; x++)
+      positions.push({ x, y })
+  return positions
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -116,7 +124,7 @@ function carveCorridor(
 
 // ─── Entity placement ────────────────────────────────
 
-function placeEntities(tiles: Tile[][], rooms: RoomRect[], startIdx: number, floorNumber: number): void {
+function placeEntities(tiles: Tile[][], rooms: RoomRect[], startIdx: number, floorNumber: number, multiplier = 1): void {
   const nonStart = shuffle(rooms.filter((_, i) => i !== startIdx))
 
   if (nonStart.length === 0) return
@@ -143,31 +151,33 @@ function placeEntities(tiles: Tile[][], rooms: RoomRect[], startIdx: number, flo
     lootOffset = 2
   }
 
-  // All remaining → monsters
+  // All remaining → monsters, 1 per tile spread across room
   const monsterRooms = nonStart.slice(0, nonStart.length - lootOffset)
   for (const room of monsterRooms) {
-    const mc = roomCenter(room)
     const count = Math.floor(Math.random() * 3) + 1
-    tiles[mc.y][mc.x] = {
-      ...tiles[mc.y][mc.x],
-      entity: { kind: 'monster', monsters: getRandomMonsters(count) },
+    const positions = shuffle(roomTilePositions(room)).slice(0, count)
+    for (const pos of positions) {
+      tiles[pos.y][pos.x] = {
+        ...tiles[pos.y][pos.x],
+        entity: { kind: 'monster', monsters: [getRandomMonster(multiplier)] },
+      }
     }
   }
 
-  // On floor 5, upgrade one random monster room to elite
+  // On floor 5, replace one random monster room's first tile with the elite
   if (floorNumber === 5 && monsterRooms.length > 0) {
     const eliteRoom = monsterRooms[Math.floor(Math.random() * monsterRooms.length)]
     const ec = roomCenter(eliteRoom)
     tiles[ec.y][ec.x] = {
       ...tiles[ec.y][ec.x],
-      entity: { kind: 'monster', monsters: [createEliteMonster()] },
+      entity: { kind: 'monster', monsters: [createEliteMonster(multiplier)] },
     }
   }
 }
 
 // ─── Public API ──────────────────────────────────────
 
-export function generateTileMap(floorNumber: number): TileMap {
+export function generateTileMap(floorNumber: number, multiplier = 1): TileMap {
   const tiles = blankGrid(MAP_WIDTH, MAP_HEIGHT)
 
   const count = Math.floor(Math.random() * (MAX_ROOMS - MIN_ROOMS + 1)) + MIN_ROOMS
@@ -187,7 +197,7 @@ export function generateTileMap(floorNumber: number): TileMap {
   const playerStart = roomCenter(rooms[startIdx])
 
   // Place entities in non-start rooms
-  placeEntities(tiles, rooms, startIdx, floorNumber)
+  placeEntities(tiles, rooms, startIdx, floorNumber, multiplier)
 
   // Reveal start room immediately
   const sr = rooms[startIdx]

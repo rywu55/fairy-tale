@@ -3,7 +3,7 @@ import { createFairy, getSpriteCeiling, canUpgradeAttribute, upgradeAttribute } 
 import type { Attributes } from '../types'
 import { CeilingExceededError } from '../types'
 
-const zeroPoints: Attributes = { attack: 0, defense: 0, heal: 0, speed: 0, evasiveness: 0, health: 0 }
+const zeroPoints: Attributes = { attack: 0, defense: 0, heal: 0, evasiveness: 0, health: 0 }
 
 function points(overrides: Partial<Attributes> = {}): Attributes {
   return { ...zeroPoints, ...overrides }

@@ -1,6 +1,6 @@
 import type {
   GameState, Fairy, Attributes, AttributeKey, Element,
-  DungeonRun, Floor, CombatState, CombatAction, FairyDefinition,
+  DungeonRun, DungeonDefinition, Floor, CombatState, CombatAction, FairyDefinition,
   Direction, MoveResult,
 } from './types'
 import { ATTRIBUTE_KEYS } from './types'
@@ -9,9 +9,17 @@ import { createFairy, canUpgradeAttribute, upgradeAttribute } from './fairy'
 import { canAfford, deductGold, addGold, getAttributeUpgradeCostForFairy, getMoveUpgradeCost } from './economy'
 import { canUpgradeMove, upgradeMove as upgradeMoveOnFairy } from './moves'
 import { startDungeonRun, generateFloor, isTimedOut, getTimeRemainingMs } from './dungeon'
-import { stepPlayer } from './navigation'
+import { DUNGEON_DEFINITIONS, getDungeonDefinition } from './data/dungeons'
+import { stepPlayer, getRoomAt } from './navigation'
 import { startCombat, executeBasicAttack, executeSpecialMove, executeMonsterPhase, getMonsterGoldDrop } from './combat'
 import { saveGame, loadGame, createFreshState, exportSave, importSave, clearSave } from './persistence'
+
+function roomHasMonsters(map: import('./types').TileMap, room: import('./types').RoomRect): boolean {
+  for (let y = room.y; y < room.y + room.h; y++)
+    for (let x = room.x; x < room.x + room.w; x++)
+      if (map.tiles[y][x].entity?.kind === 'monster') return true
+  return false
+}
 
 export class GameEngine {
   private state: GameState
@@ -62,9 +70,25 @@ export class GameEngine {
 
   // ─── Dungeon ────────────────────────────────────────
 
+  getDungeons(): DungeonDefinition[] {
+    return DUNGEON_DEFINITIONS
+  }
+
+  isDungeonUnlocked(dungeonId: string): boolean {
+    const def = getDungeonDefinition(dungeonId)
+    if (def.unlockAfterClears === 0 || !def.previousDungeonId) return true
+    const clears = this.state.stats.clearsPerDungeon[def.previousDungeonId] ?? 0
+    return clears >= def.unlockAfterClears
+  }
+
+  getDungeonClears(dungeonId: string): number {
+    return this.state.stats.clearsPerDungeon[dungeonId] ?? 0
+  }
+
   startDungeon(dungeonId: string): DungeonRun {
     if (!this.state.fairy) throw new Error('No fairy created')
-    this.activeDungeon = startDungeonRun(dungeonId, this.state.fairy)
+    const def = getDungeonDefinition(dungeonId)
+    this.activeDungeon = startDungeonRun(dungeonId, this.state.fairy, def.timeLimitMs, def.difficultyMultiplier)
     this.activeCombat = null
     return this.activeDungeon
   }
@@ -87,6 +111,14 @@ export class GameEngine {
     const { newPos, newMap, moved } = stepPlayer(floor.map, floor.playerPos, dir)
 
     if (!moved) return none
+
+    // Room-lock: can't step into a corridor while the current room still has monsters
+    const fromTile = floor.map.tiles[floor.playerPos.y][floor.playerPos.x]
+    const toTile = floor.map.tiles[newPos.y][newPos.x]
+    if (fromTile.type === 'floor' && toTile.type === 'corridor') {
+      const room = getRoomAt(floor.map, floor.playerPos)
+      if (room && roomHasMonsters(floor.map, room)) return none
+    }
 
     const newFogRevealed = !floor.map.tiles[newPos.y][newPos.x].explored
 
@@ -144,7 +176,8 @@ export class GameEngine {
       this.endDungeon('victory')
       return
     }
-    const newFloor = generateFloor(nextFloor)
+    const multiplier = getDungeonDefinition(this.activeDungeon.dungeonId).difficultyMultiplier
+    const newFloor = generateFloor(nextFloor, multiplier)
     this.activeDungeon = {
       ...this.activeDungeon,
       currentFloor: nextFloor,
@@ -156,6 +189,8 @@ export class GameEngine {
     if (!this.activeDungeon) return
     this.activeDungeon = { ...this.activeDungeon, status }
     const floorsCleared = this.activeDungeon.currentFloor - (status === 'victory' ? 0 : 1)
+    const dungeonId = this.activeDungeon.dungeonId
+    const prevClears = this.state.stats.clearsPerDungeon[dungeonId] ?? 0
     this.state = {
       ...this.state,
       stats: {
@@ -164,6 +199,9 @@ export class GameEngine {
           ? this.state.stats.dungeonsCompleted + 1
           : this.state.stats.dungeonsCompleted,
         floorsCleared: this.state.stats.floorsCleared + Math.max(0, floorsCleared),
+        clearsPerDungeon: status === 'victory'
+          ? { ...this.state.stats.clearsPerDungeon, [dungeonId]: prevClears + 1 }
+          : this.state.stats.clearsPerDungeon,
       },
     }
     this.activeCombat = null

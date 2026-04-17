@@ -8,7 +8,7 @@ export function createFreshState(): GameState {
     version: 1,
     fairy: null,
     gold: 0,
-    stats: { dungeonsCompleted: 0, floorsCleared: 0, totalGoldEarned: 0 },
+    stats: { dungeonsCompleted: 0, floorsCleared: 0, totalGoldEarned: 0, clearsPerDungeon: {} },
     ftueComplete: false,
   }
 }
@@ -30,6 +30,10 @@ export function loadGame(): GameState | null {
     const parsed = JSON.parse(raw) as GameState
     if (typeof parsed !== 'object' || parsed === null) throw new CorruptedSaveError()
     if (parsed.version !== 1) throw new CorruptedSaveError()
+    // Migrate old saves that predate clearsPerDungeon
+    if (!parsed.stats.clearsPerDungeon) {
+      parsed.stats = { ...parsed.stats, clearsPerDungeon: {} }
+    }
     return parsed
   } catch (e) {
     if (e instanceof CorruptedSaveError) throw e

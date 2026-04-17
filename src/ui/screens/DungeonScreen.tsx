@@ -152,7 +152,7 @@ export function DungeonScreen({ onExit }: Props) {
           {/* Legend */}
           <div style={{ display: 'flex', gap: 14, fontSize: 12, color: '#6b7280', marginBottom: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
             <span>🧚 You</span>
-            <span>⚔️ Monster</span>
+            <span>👺😈🦇🌟🫧 Monsters</span>
             <span>💰 Loot</span>
             <span>📦 Chest</span>
             <span>🪜 Stairs (F5)</span>

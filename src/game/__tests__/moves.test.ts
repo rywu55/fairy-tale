@@ -5,7 +5,7 @@ import type { DungeonFairyState, MoveInstance, Fairy } from '../types'
 const baseFairyState: DungeonFairyState = {
   currentHp: 30,
   maxHp: 30,
-  attributes: { attack: 20, defense: 15, heal: 15, speed: 15, evasiveness: 15, health: 30 },
+  attributes: { attack: 20, defense: 15, heal: 15, evasiveness: 15, health: 30 },
   move: { definitionId: 'pixie_splash', level: 1 },
   moveUsesRemaining: 3,
 }
@@ -13,8 +13,8 @@ const baseFairyState: DungeonFairyState = {
 const baseFairy: Fairy = {
   definitionId: 'water',
   name: 'Coral',
-  attributes: { attack: 20, defense: 15, heal: 15, speed: 15, evasiveness: 15, health: 30 },
-  attributeUpgradeCounts: { attack: 0, defense: 0, heal: 0, speed: 0, evasiveness: 0, health: 0 },
+  attributes: { attack: 20, defense: 15, heal: 15, evasiveness: 15, health: 30 },
+  attributeUpgradeCounts: { attack: 0, defense: 0, heal: 0, evasiveness: 0, health: 0 },
   move: { definitionId: 'pixie_splash', level: 1 },
 }
 

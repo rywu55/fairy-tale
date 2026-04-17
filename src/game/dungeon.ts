@@ -2,8 +2,8 @@ import type { Floor, DungeonRun, Fairy, DungeonFairyState } from './types'
 import { generateTileMap } from './mapgen'
 import { initMoveUses } from './moves'
 
-export function generateFloor(floorNumber: number): Floor {
-  const map = generateTileMap(floorNumber)
+export function generateFloor(floorNumber: number, multiplier = 1): Floor {
+  const map = generateTileMap(floorNumber, multiplier)
   return {
     number: floorNumber,
     map,
@@ -11,8 +11,13 @@ export function generateFloor(floorNumber: number): Floor {
   }
 }
 
-export function startDungeonRun(dungeonId: string, fairy: Fairy): DungeonRun {
-  const floor1 = generateFloor(1)
+export function startDungeonRun(
+  dungeonId: string,
+  fairy: Fairy,
+  timeLimitMs: number,
+  multiplier = 1,
+): DungeonRun {
+  const floor1 = generateFloor(1, multiplier)
   const fairyState: DungeonFairyState = {
     currentHp: fairy.attributes.health,
     maxHp: fairy.attributes.health,
@@ -28,7 +33,7 @@ export function startDungeonRun(dungeonId: string, fairy: Fairy): DungeonRun {
     fairy: fairyState,
     goldCollected: 0,
     startTime: Date.now(),
-    timeLimitMs: 600_000,
+    timeLimitMs,
     status: 'active',
   }
 }

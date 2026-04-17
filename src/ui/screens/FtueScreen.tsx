@@ -7,7 +7,7 @@ import { FairySilhouette } from '../components/FairySilhouette'
 import { AttributeAllocator } from '../components/AttributeAllocator'
 import { useGameEngine } from '../useGameEngine'
 
-const ZERO_POINTS: Attributes = { attack: 0, defense: 0, heal: 0, speed: 0, evasiveness: 0, health: 0 }
+const ZERO_POINTS: Attributes = { attack: 0, defense: 0, heal: 0, evasiveness: 0, health: 0 }
 const TOTAL_STARTER_POINTS = 3
 
 export function FtueScreen() {

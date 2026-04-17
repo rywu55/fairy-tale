@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useGameEngine } from './ui/useGameEngine'
 import { FtueScreen } from './ui/screens/FtueScreen'
 import { HomeScreen } from './ui/screens/HomeScreen'
+import { DungeonSelectScreen } from './ui/screens/DungeonSelectScreen'
 import { DungeonScreen } from './ui/screens/DungeonScreen'
 import { UpgradeScreen } from './ui/screens/UpgradeScreen'
 
-type Screen = 'home' | 'dungeon' | 'upgrades'
+type Screen = 'home' | 'dungeon-select' | 'dungeon' | 'upgrades'
 
 export default function App() {
   const { state, engine, wrap, refresh } = useGameEngine()
@@ -15,9 +16,9 @@ export default function App() {
     return <FtueScreen />
   }
 
-  function handleEnterDungeon() {
+  function handleSelectDungeon(dungeonId: string) {
     try {
-      wrap(() => engine.startDungeon('ember_caves'))
+      wrap(() => engine.startDungeon(dungeonId))
       setScreen('dungeon')
     } catch (e) {
       console.error(e)
@@ -33,8 +34,14 @@ export default function App() {
     <>
       {screen === 'home' && (
         <HomeScreen
-          onEnterDungeon={handleEnterDungeon}
+          onEnterDungeon={() => setScreen('dungeon-select')}
           onUpgrades={() => setScreen('upgrades')}
+        />
+      )}
+      {screen === 'dungeon-select' && (
+        <DungeonSelectScreen
+          onSelect={handleSelectDungeon}
+          onBack={() => setScreen('home')}
         />
       )}
       {screen === 'dungeon' && (

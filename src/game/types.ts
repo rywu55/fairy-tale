@@ -8,7 +8,6 @@ export interface Attributes {
   attack: number
   defense: number
   heal: number
-  speed: number
   evasiveness: number
   health: number
 }
@@ -79,7 +78,7 @@ export interface MonsterDefinition {
   element: Element
   baseHp: number
   baseAttack: number
-  baseSpeed: number
+  icon: string   // emoji shown on tile
 }
 
 export interface MonsterInstance {
@@ -88,7 +87,6 @@ export interface MonsterInstance {
   currentHp: number
   maxHp: number
   attack: number
-  speed: number
 }
 
 // ─── Tile Map ────────────────────────────────────────
@@ -175,8 +173,6 @@ export interface CombatState {
   monsters: MonsterInstance[]
   turnLog: TurnLogEntry[]
   status: 'player_turn' | 'monster_turn' | 'victory' | 'defeat'
-  actionsThisTurn: number
-  actionsPerTurn: number
 }
 
 export interface TurnLogEntry {
@@ -186,6 +182,18 @@ export interface TurnLogEntry {
   damage: number
   missed: boolean
   healed: number
+}
+
+// ─── Dungeon Definition ──────────────────────────────
+
+export interface DungeonDefinition {
+  id: string
+  name: string
+  description: string
+  timeLimitMs: number
+  difficultyMultiplier: number   // scales monster HP and attack
+  unlockAfterClears: number      // clears of previousDungeonId required; 0 = always unlocked
+  previousDungeonId: string | null
 }
 
 // ─── Persistence ────────────────────────────────────
@@ -202,6 +210,7 @@ export interface PlayerStats {
   dungeonsCompleted: number
   floorsCleared: number
   totalGoldEarned: number
+  clearsPerDungeon: Record<string, number>
 }
 
 // ─── Errors ─────────────────────────────────────────
@@ -235,14 +244,13 @@ export class InvalidSaveError extends Error {
 }
 
 export const ATTRIBUTE_KEYS: AttributeKey[] = [
-  'attack', 'defense', 'heal', 'speed', 'evasiveness', 'health',
+  'attack', 'defense', 'heal', 'evasiveness', 'health',
 ]
 
 export const ATTRIBUTE_LABELS: Record<AttributeKey, string> = {
   attack: 'Attack',
   defense: 'Defense',
   heal: 'Heal',
-  speed: 'Speed',
   evasiveness: 'Evasiveness',
   health: 'Health',
 }

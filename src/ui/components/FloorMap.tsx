@@ -1,4 +1,5 @@
 import type { Floor } from '../../game/types'
+import { getMonsterIcon } from '../../game/data/monsters'
 
 const VIEWPORT_W = 15
 const VIEWPORT_H = 11
@@ -39,7 +40,7 @@ export function FloorMap({ floor }: Props) {
         icon = '🧚'
       } else if (tile.explored && tile.entity) {
         const e = tile.entity
-        if (e.kind === 'monster')  icon = '⚔️'
+        if (e.kind === 'monster')  icon = getMonsterIcon(e.monsters[0].definitionId)
         else if (e.kind === 'loot')    icon = '💰'
         else if (e.kind === 'chest')   icon = '📦'
         else if (e.kind === 'stairs')  icon = '🪜'

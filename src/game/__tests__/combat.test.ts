@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
   startCombat,
-  calculateFairyActions,
   executeBasicAttack,
   executeSpecialMove,
   executeMonsterPhase,
@@ -12,7 +11,7 @@ import type { DungeonFairyState, MonsterInstance } from '../types'
 const baseFairy: DungeonFairyState = {
   currentHp: 50,
   maxHp: 50,
-  attributes: { attack: 20, defense: 10, heal: 5, speed: 15, evasiveness: 0, health: 50 },
+  attributes: { attack: 20, defense: 10, heal: 5, evasiveness: 0, health: 50 },
   move: { definitionId: 'pixie_splash', level: 1 },
   moveUsesRemaining: 3,
 }
@@ -23,7 +22,6 @@ const weakMonster: MonsterInstance = {
   currentHp: 15,
   maxHp: 15,
   attack: 5,
-  speed: 5,
 }
 
 const strongMonster: MonsterInstance = {
@@ -32,7 +30,6 @@ const strongMonster: MonsterInstance = {
   currentHp: 100,
   maxHp: 100,
   attack: 30,
-  speed: 20,
 }
 
 describe('startCombat', () => {
@@ -41,29 +38,10 @@ describe('startCombat', () => {
     expect(state.status).toBe('player_turn')
   })
 
-  it('calculates actionsPerTurn', () => {
-    const state = startCombat(baseFairy, [weakMonster])
-    expect(state.actionsPerTurn).toBeGreaterThanOrEqual(1)
-  })
-
   it('copies fairy and monsters (no mutation)', () => {
     const state = startCombat(baseFairy, [weakMonster])
     state.fairy.currentHp = 0
     expect(baseFairy.currentHp).toBe(50)
-  })
-})
-
-describe('calculateFairyActions', () => {
-  it('returns at least 1', () => {
-    const slowFairy = { ...baseFairy, attributes: { ...baseFairy.attributes, speed: 1 } }
-    expect(calculateFairyActions(slowFairy, [strongMonster])).toBeGreaterThanOrEqual(1)
-  })
-
-  it('returns more actions when fairy is faster', () => {
-    const fastFairy = { ...baseFairy, attributes: { ...baseFairy.attributes, speed: 100 } }
-    const slow = calculateFairyActions(baseFairy, [weakMonster])
-    const fast = calculateFairyActions(fastFairy, [weakMonster])
-    expect(fast).toBeGreaterThanOrEqual(slow)
   })
 })
 
@@ -86,6 +64,12 @@ describe('executeBasicAttack', () => {
     const state = startCombat(baseFairy, [weakMonster]) // fairy attack=20, monster hp=15
     const result = executeBasicAttack(state, 0)
     expect(result.status).toBe('victory')
+  })
+
+  it('transitions to monster_turn when monster survives', () => {
+    const state = startCombat(baseFairy, [strongMonster])
+    const result = executeBasicAttack(state, 0)
+    expect(result.status).toBe('monster_turn')
   })
 
   it('does not affect dead monsters', () => {
@@ -112,7 +96,6 @@ describe('executeSpecialMove', () => {
   it('deals damage based on move power (not attack)', () => {
     const state = startCombat(baseFairy, [strongMonster])
     const result = executeSpecialMove(state, 0)
-    // Damage should not equal attack stat (50 != 20 for attack)
     const hpLost = strongMonster.currentHp - result.monsters[0].currentHp
     expect(hpLost).toBeGreaterThan(0)
     expect(hpLost).not.toBe(baseFairy.attributes.attack)
@@ -123,7 +106,6 @@ describe('executeMonsterPhase', () => {
   it('deals damage to fairy (with 0 evasion, always hits)', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.5) // roll=50, won't evade with 0 evasion
     const state = startCombat(baseFairy, [weakMonster])
-    // Manually set to monster_turn
     const monsterTurnState = { ...state, status: 'monster_turn' as const }
     const result = executeMonsterPhase(monsterTurnState)
     const expectedDamage = Math.max(1, weakMonster.attack - baseFairy.attributes.defense)
@@ -142,7 +124,7 @@ describe('executeMonsterPhase', () => {
 
   it('sets defeat when fairy hp reaches 0', () => {
     const lowHpFairy = { ...baseFairy, currentHp: 1 }
-    const state = startCombat(lowHpFairy, [strongMonster]) // golem attack=30, defense=10, damage=20
+    const state = startCombat(lowHpFairy, [strongMonster])
     const monsterTurnState = { ...state, status: 'monster_turn' as const }
     vi.spyOn(Math, 'random').mockReturnValue(0.99) // never evade
     const result = executeMonsterPhase(monsterTurnState)

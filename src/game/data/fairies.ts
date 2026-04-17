@@ -10,7 +10,7 @@ const FAIRY_DEFINITIONS: Record<string, FairyDefinition> = {
       attack: 'S',
       defense: 'C',
       heal: 'D',
-      speed: 'B',
+
       evasiveness: 'C',
       health: 'B',
     },
@@ -26,7 +26,7 @@ const FAIRY_DEFINITIONS: Record<string, FairyDefinition> = {
       attack: 'B',
       defense: 'B',
       heal: 'A',
-      speed: 'B',
+
       evasiveness: 'B',
       health: 'A',
     },
@@ -42,7 +42,7 @@ const FAIRY_DEFINITIONS: Record<string, FairyDefinition> = {
       attack: 'C',
       defense: 'S',
       heal: 'C',
-      speed: 'D',
+
       evasiveness: 'D',
       health: 'S',
     },
@@ -52,13 +52,13 @@ const FAIRY_DEFINITIONS: Record<string, FairyDefinition> = {
   wind: {
     element: 'wind',
     name: 'Zephyria',
-    description: 'Untouchable speedster. Strikes fast and dodges often, but fragile.',
-    playstyle: 'Speed / Evasion',
+    description: 'Untouchable dodger. Evades attacks constantly, but fragile when hit.',
+    playstyle: 'Evasion / Glass cannon',
     ceilings: {
       attack: 'B',
       defense: 'C',
       heal: 'B',
-      speed: 'S',
+
       evasiveness: 'S',
       health: 'D',
     },
@@ -74,7 +74,7 @@ const FAIRY_DEFINITIONS: Record<string, FairyDefinition> = {
       attack: 'C',
       defense: 'B',
       heal: 'S',
-      speed: 'C',
+
       evasiveness: 'B',
       health: 'B',
     },

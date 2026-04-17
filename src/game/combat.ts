@@ -1,29 +1,14 @@
 import type { CombatState, DungeonFairyState, MonsterInstance, TurnLogEntry } from './types'
-import { getMovePower, useMove } from './moves'
+import { getMovePower, useMove, getMoveName } from './moves'
 import { randomGoldInRange } from './economy'
-import { getAverageMonsterSpeed } from './data/monsters'
-import { getMoveName } from './moves'
 
 export function startCombat(fairy: DungeonFairyState, monsters: MonsterInstance[]): CombatState {
-  const actionsPerTurn = calculateFairyActions(fairy, monsters)
   return {
     fairy: { ...fairy },
     monsters: monsters.map(m => ({ ...m })),
     turnLog: [],
     status: 'player_turn',
-    actionsThisTurn: 0,
-    actionsPerTurn,
   }
-}
-
-export function calculateFairyActions(
-  fairy: DungeonFairyState,
-  monsters: MonsterInstance[],
-): number {
-  const avgSpeed = monsters.length > 0
-    ? monsters.reduce((sum, m) => sum + m.speed, 0) / monsters.length
-    : getAverageMonsterSpeed()
-  return Math.max(1, Math.floor(fairy.attributes.speed / avgSpeed))
 }
 
 export function executeBasicAttack(state: CombatState, targetIndex: number): CombatState {
@@ -44,7 +29,7 @@ export function executeBasicAttack(state: CombatState, targetIndex: number): Com
   }
 
   const newState = { ...state, monsters, turnLog: [...state.turnLog, entry] }
-  return advanceFairyAction(checkCombatEnd(newState))
+  return toMonsterTurn(checkCombatEnd(newState))
 }
 
 export function executeSpecialMove(state: CombatState, targetIndex: number): CombatState {
@@ -59,10 +44,9 @@ export function executeSpecialMove(state: CombatState, targetIndex: number): Com
   const damage = getMovePower(state.fairy.move)
   target.currentHp = Math.max(0, target.currentHp - damage)
 
-  const moveName = getMoveName(state.fairy.move)
   const entry: TurnLogEntry = {
     actor: 'Your Fairy',
-    action: moveName,
+    action: getMoveName(state.fairy.move),
     target: target.name,
     damage,
     missed: false,
@@ -71,17 +55,13 @@ export function executeSpecialMove(state: CombatState, targetIndex: number): Com
 
   const newFairy = useMove(state.fairy)
   const newState = { ...state, fairy: newFairy, monsters, turnLog: [...state.turnLog, entry] }
-  return advanceFairyAction(checkCombatEnd(newState))
+  return toMonsterTurn(checkCombatEnd(newState))
 }
 
-function advanceFairyAction(state: CombatState): CombatState {
+// After a player action, hand off to monsters (unless combat is already over)
+function toMonsterTurn(state: CombatState): CombatState {
   if (state.status !== 'player_turn') return state
-
-  const newActionsThisTurn = state.actionsThisTurn + 1
-  if (newActionsThisTurn >= state.actionsPerTurn) {
-    return { ...state, actionsThisTurn: 0, status: 'monster_turn' }
-  }
-  return { ...state, actionsThisTurn: newActionsThisTurn }
+  return { ...state, status: 'monster_turn' }
 }
 
 export function executeMonsterPhase(state: CombatState): CombatState {
@@ -122,7 +102,7 @@ export function executeMonsterPhase(state: CombatState): CombatState {
 
   let newState = { ...state, fairy, turnLog: log }
 
-  // Heal phase: only if 0 damage taken this monster phase
+  // Heal phase: only if no damage taken this monster phase
   if (totalDamageTaken === 0 && fairy.currentHp > 0) {
     const healed = Math.min(fairy.attributes.heal, fairy.maxHp - fairy.currentHp)
     if (healed > 0) {
@@ -141,7 +121,7 @@ export function executeMonsterPhase(state: CombatState): CombatState {
 
   newState = checkCombatEnd(newState)
   if (newState.status === 'monster_turn') {
-    newState = { ...newState, status: 'player_turn', actionsThisTurn: 0 }
+    newState = { ...newState, status: 'player_turn' }
   }
   return newState
 }

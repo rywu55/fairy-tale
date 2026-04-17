@@ -28,11 +28,6 @@ export function CombatView({ combat, fairyName, onAction, onClose }: Props) {
           <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>
             Moves: {combat.fairy.moveUsesRemaining}
           </div>
-          <div style={{ fontSize: 11, color: '#9ca3af' }}>
-            {isPlayerTurn && combat.actionsPerTurn > 1
-              ? `Action ${combat.actionsThisTurn + 1} / ${combat.actionsPerTurn}`
-              : ''}
-          </div>
         </div>
 
         {/* Monster side */}

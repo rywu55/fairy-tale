@@ -1,11 +1,11 @@
 import type { MonsterDefinition, MonsterInstance } from '../types'
 
 const MONSTER_DEFINITIONS: MonsterDefinition[] = [
-  { id: 'goblin', name: 'Goblin', element: 'earth', baseHp: 20, baseAttack: 8, baseSpeed: 10 },
-  { id: 'slime', name: 'Slime', element: 'water', baseHp: 30, baseAttack: 5, baseSpeed: 6 },
-  { id: 'imp', name: 'Imp', element: 'fire', baseHp: 15, baseAttack: 10, baseSpeed: 14 },
-  { id: 'wisp', name: 'Wisp', element: 'light', baseHp: 12, baseAttack: 6, baseSpeed: 18 },
-  { id: 'bat', name: 'Bat', element: 'wind', baseHp: 18, baseAttack: 7, baseSpeed: 16 },
+  { id: 'goblin', name: 'Goblin', element: 'earth', baseHp: 20, baseAttack: 8,  icon: '👺' },
+  { id: 'slime',  name: 'Slime',  element: 'water', baseHp: 30, baseAttack: 5,  icon: '🫧' },
+  { id: 'imp',    name: 'Imp',    element: 'fire',  baseHp: 15, baseAttack: 10, icon: '😈' },
+  { id: 'wisp',   name: 'Wisp',   element: 'light', baseHp: 12, baseAttack: 6,  icon: '🌟' },
+  { id: 'bat',    name: 'Bat',    element: 'wind',  baseHp: 18, baseAttack: 7,  icon: '🦇' },
 ]
 
 const ELITE_DEFINITION: MonsterDefinition = {
@@ -14,34 +14,34 @@ const ELITE_DEFINITION: MonsterDefinition = {
   element: 'earth',
   baseHp: 60,
   baseAttack: 15,
-  baseSpeed: 12,
+  icon: '💀',
 }
 
-function instantiate(def: MonsterDefinition): MonsterInstance {
+const ALL_DEFINITIONS = [...MONSTER_DEFINITIONS, ELITE_DEFINITION]
+
+function instantiate(def: MonsterDefinition, multiplier = 1): MonsterInstance {
   return {
     definitionId: def.id,
     name: def.name,
-    currentHp: def.baseHp,
-    maxHp: def.baseHp,
-    attack: def.baseAttack,
-    speed: def.baseSpeed,
+    currentHp: Math.max(1, Math.round(def.baseHp * multiplier)),
+    maxHp: Math.max(1, Math.round(def.baseHp * multiplier)),
+    attack: Math.max(1, Math.round(def.baseAttack * multiplier)),
   }
 }
 
-export function getRandomMonsters(count: number): MonsterInstance[] {
-  const result: MonsterInstance[] = []
-  for (let i = 0; i < count; i++) {
-    const def = MONSTER_DEFINITIONS[Math.floor(Math.random() * MONSTER_DEFINITIONS.length)]
-    result.push(instantiate(def))
-  }
-  return result
+export function getRandomMonster(multiplier = 1): MonsterInstance {
+  const def = MONSTER_DEFINITIONS[Math.floor(Math.random() * MONSTER_DEFINITIONS.length)]
+  return instantiate(def, multiplier)
 }
 
-export function createEliteMonster(): MonsterInstance {
-  return instantiate(ELITE_DEFINITION)
+export function getRandomMonsters(count: number, multiplier = 1): MonsterInstance[] {
+  return Array.from({ length: count }, () => getRandomMonster(multiplier))
 }
 
-export function getAverageMonsterSpeed(): number {
-  const total = MONSTER_DEFINITIONS.reduce((sum, m) => sum + m.baseSpeed, 0)
-  return total / MONSTER_DEFINITIONS.length
+export function createEliteMonster(multiplier = 1): MonsterInstance {
+  return instantiate(ELITE_DEFINITION, multiplier)
+}
+
+export function getMonsterIcon(definitionId: string): string {
+  return ALL_DEFINITIONS.find(d => d.id === definitionId)?.icon ?? '⚔️'
 }

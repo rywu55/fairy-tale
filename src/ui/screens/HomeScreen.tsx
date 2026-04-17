@@ -102,7 +102,7 @@ export function HomeScreen({ onEnterDungeon, onUpgrades }: Props) {
         {/* Actions + Stats */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1, minWidth: 180 }}>
           <button onClick={onEnterDungeon} style={bigBtn('#6366f1')}>
-            ⚔️ Enter Dungeon
+            ⚔️ Dungeons
           </button>
           <button onClick={onUpgrades} style={bigBtn('#374151')}>
             ⬆️ Upgrades

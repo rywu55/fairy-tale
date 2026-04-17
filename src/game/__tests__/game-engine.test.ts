@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { GameEngine } from '../game-engine'
 import type { Attributes } from '../types'
 
-const zeroPoints: Attributes = { attack: 0, defense: 0, heal: 0, speed: 0, evasiveness: 0, health: 0 }
+const zeroPoints: Attributes = { attack: 0, defense: 0, heal: 0, evasiveness: 0, health: 0 }
 
 function points(overrides: Partial<Attributes> = {}): Attributes {
   return { ...zeroPoints, ...overrides }
@@ -51,7 +51,7 @@ describe('GameEngine — dungeon flow', () => {
   })
 
   it('startDungeon creates an active dungeon', () => {
-    engine.startDungeon('ember_caves')
+    engine.startDungeon('meadow_cave')
     const dungeon = engine.getActiveDungeon()
     expect(dungeon).not.toBeNull()
     expect(dungeon!.status).toBe('active')
@@ -61,7 +61,7 @@ describe('GameEngine — dungeon flow', () => {
   it('throws when starting dungeon without fairy', () => {
     localStorage.clear()
     const freshEngine = new GameEngine()
-    expect(() => freshEngine.startDungeon('ember_caves')).toThrow('No fairy')
+    expect(() => freshEngine.startDungeon('meadow_cave')).toThrow('No fairy')
   })
 
   it('movePlayer returns moved:false when no active dungeon', () => {
@@ -75,18 +75,18 @@ describe('GameEngine — dungeon flow', () => {
   })
 
   it('movePlayer returns moved:true when stepping onto walkable tile', () => {
-    engine.startDungeon('ember_caves')
+    engine.startDungeon('meadow_cave')
     // Player starts in room centre; all 4 adjacent tiles in the room are floor — one will succeed
     const dirs = ['up', 'down', 'left', 'right'] as const
     const anyMoved = dirs.some(dir => {
-      engine.startDungeon('ember_caves')
+      engine.startDungeon('meadow_cave')
       return engine.movePlayer(dir).moved
     })
     expect(anyMoved).toBe(true)
   })
 
   it('movePlayer returns moved:false when blocked by a wall', () => {
-    engine.startDungeon('ember_caves')
+    engine.startDungeon('meadow_cave')
     // Move left until blocked; the map boundary guarantees a wall within 30 steps
     let blocked = false
     for (let i = 0; i < 35; i++) {
@@ -176,7 +176,7 @@ describe('GameEngine — export / import save', () => {
   it('importSave clears active dungeon', () => {
     const engine = createTestEngine()
     engine.createFairy('water', points({ health: 3 }), 'Coral')
-    engine.startDungeon('ember_caves')
+    engine.startDungeon('meadow_cave')
     expect(engine.getActiveDungeon()).not.toBeNull()
 
     const exported = engine.exportSave()
@@ -191,16 +191,16 @@ describe('GameEngine — timeout', () => {
   it('checkTimeout returns false for fresh dungeon', () => {
     const engine = createTestEngine()
     engine.createFairy('water', points({ health: 3 }), 'Coral')
-    engine.startDungeon('ember_caves')
+    engine.startDungeon('meadow_cave')
     expect(engine.checkTimeout()).toBe(false)
   })
 
   it('getTimeRemainingMs returns ~10 min for fresh dungeon', () => {
     const engine = createTestEngine()
     engine.createFairy('water', points({ health: 3 }), 'Coral')
-    engine.startDungeon('ember_caves')
+    engine.startDungeon('meadow_cave')
     const remaining = engine.getTimeRemainingMs()
-    expect(remaining).toBeGreaterThan(590_000)
+    expect(remaining).toBeGreaterThan(170_000)  // meadow_cave has 3 min limit
   })
 
   it('getTimeRemainingMs returns 0 without active dungeon', () => {
