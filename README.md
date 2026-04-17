@@ -1,73 +1,49 @@
-# React + TypeScript + Vite
+# Fairy Tale — Dungeon Crawler
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A browser-based dungeon crawler where you raise and battle with a fairy companion. Explore procedurally generated tile maps, fight monsters, collect gold, and upgrade your fairy across 5 floors.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- [Node.js](https://nodejs.org/) v18 or later
+- npm (included with Node.js)
 
-## React Compiler
+## Installation
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone https://github.com/rywu55/fairy-tale.git
+cd fairy-tale
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Running Locally
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Then open [http://localhost:5173](http://localhost:5173) in your browser.
+
+## Other Commands
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start local dev server with hot reload |
+| `npm run build` | Build for production (output to `dist/`) |
+| `npm test` | Run unit tests |
+| `npm run test:watch` | Run tests in watch mode |
+
+## How to Play
+
+1. **Create your fairy** — choose an element and allocate starter attribute points
+2. **Enter the dungeon** — navigate a tile map using the D-Pad or arrow keys
+3. **Explore** — fog of war lifts as you move; find monsters, loot, and chests
+4. **Battle** — stepping onto a monster tile starts turn-based combat
+5. **Advance** — open the chest on each floor to proceed; reach floor 5 and find the stairs to win
+6. **Upgrade** — spend gold between runs to improve your fairy's attributes and move power
+
+## Controls
+
+| Input | Action |
+|---|---|
+| Arrow keys | Move |
+| D-Pad buttons | Move (mouse/touch) |
